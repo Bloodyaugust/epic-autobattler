@@ -4,5 +4,8 @@
   "module": "src/index.js",
   "devDependencies": {
     "bun-types": "latest"
+  },
+  "dependencies": {
+    "baojs": "^0.1.3"
   }
 }
