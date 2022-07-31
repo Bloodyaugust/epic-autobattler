@@ -11,6 +11,7 @@ export type Game = {
   units: ActorUnit[];
   tick: number;
   events: AttackEvent[];
+  id: string;
 }
 
 export type GameOverEvent = {

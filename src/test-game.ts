@@ -11,6 +11,7 @@ const game: Game = {
   units: [],
   tick: 0,
   events: [],
+  id: v4(),
 };
 
 console.log(`Starting game with players: ${JSON.stringify(game.players)}`);

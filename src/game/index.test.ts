@@ -8,6 +8,7 @@ const defaultGameData = {
   units: [],
   tick: 0,
   events: [],
+  id: v4(),
 };
 
 const defaultUnitData = {
@@ -44,10 +45,7 @@ describe('Unit', () => {
 describe('UnitActor', () => {
   it('can be used to attack', () => {
     const game: Game = {
-      players: [],
-      units: [],
-      tick: 0,
-      events: [],
+      ...defaultGameData,
     };
     const attacker: ActorUnit = new ActorUnit({
       ...defaultUnitData,
@@ -76,10 +74,7 @@ describe('UnitActor', () => {
 
   it('can get target', () => {
     const game: Game = {
-      players: [],
-      units: [],
-      tick: 0,
-      events: [],
+      ...defaultGameData,
     };
     const attacker: ActorUnit = new ActorUnit({
       ...defaultUnitData,
