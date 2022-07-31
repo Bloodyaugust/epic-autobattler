@@ -16,12 +16,12 @@ const game: Game = {
 console.log(`Starting game with players: ${JSON.stringify(game.players)}`);
 
 for (let i = 0; i < 100; i++) {
-  game.units.push(unitFactory(archer, game.players[0]));
-  game.units.push(unitFactory(Math.random() >= 0.5 ? footman : archer, game.players[1]));
+  game.units.push(unitFactory(archer, game, game.players[0]));
+  game.units.push(unitFactory(Math.random() >= 0.5 ? footman : archer, game, game.players[1]));
 }
 
-console.log(`Team ${game.players[0]} starting with: ${game.units.filter(unit => unit.owner === game.players[0] && unit.name === 'archer').length} archers and ${game.units.filter(unit => unit.owner === game.players[0] && unit.name === 'footman').length} footmen`);
-console.log(`Team ${game.players[1]} starting with: ${game.units.filter(unit => unit.owner === game.players[1] && unit.name === 'archer').length} archers and ${game.units.filter(unit => unit.owner === game.players[1] && unit.name === 'footman').length} footmen`);
+console.log(`Team ${game.players[0]} starting with: ${game.units.filter(unit => unit.owner === game.players[0] && unit.data.name === 'archer').length} archers and ${game.units.filter(unit => unit.owner === game.players[0] && unit.data.name === 'footman').length} footmen`);
+console.log(`Team ${game.players[1]} starting with: ${game.units.filter(unit => unit.owner === game.players[1] && unit.data.name === 'archer').length} archers and ${game.units.filter(unit => unit.owner === game.players[1] && unit.data.name === 'footman').length} footmen`);
 
 while (!getGameOver(game)) {
   tick(game);

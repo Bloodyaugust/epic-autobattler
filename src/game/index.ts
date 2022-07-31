@@ -1,14 +1,14 @@
-import { attack, findTarget, Unit } from './unit';
+import { attack, findTarget, ActorUnit } from './unit';
 
 export type AttackEvent = {
-  attacker: Unit,
-  target: Unit,
+  attacker: ActorUnit,
+  target: ActorUnit,
   damage: number,
 }
 
 export type Game = {
   players: string[];
-  units: Unit[];
+  units: ActorUnit[];
   tick: number;
   events: AttackEvent[];
 }

@@ -15,6 +15,7 @@ export const footman: Unit = {
   defense: 0.75,
   moveSpeed: 1,
   range: 1,
+  cooldown: 1,
 };
 
 export const archer: Unit = {
@@ -26,4 +27,5 @@ export const archer: Unit = {
   defense: 0.15,
   moveSpeed: 1,
   range: 5,
+  cooldown: 2,
 };

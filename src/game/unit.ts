@@ -1,24 +1,55 @@
 import { v4 } from 'uuid';
-import { AttackEvent } from '.';
+import { AttackEvent, Game } from '.';
 import { distance, Vector } from './vector';
 
 export type Unit = {
-  location: Vector;
   type: string;
   name: string;
   health: number;
   attack: number[];
+  cooldown: number;
   defense: number;
   moveSpeed: number;
   range: number;
-  owner: string;
-  id: string;
 }
 
-export type UnitOrNull = Unit | null;
+export class ActorUnit {
+  data: Unit;
+  game: Game;
+  target?: ActorUnit;
+  cooldownTicks: number;
+  health: number;
+  location: Vector;
+  owner: string;
+  id: string;
 
-export function attack(attacker: Unit, target: Unit): AttackEvent {
-  const damage = (attacker.attack[0] + (Math.random() * (attacker.attack[1] - attacker.attack[0]))) - target.defense;
+  constructor(unit: Unit, game: Game, owner: string, location: Vector = { x: 0, y: 0 }) {
+    this.data = unit;
+    this.game = game;
+    this.cooldownTicks = 0;
+    this.health = this.data.health;
+    this.location = location;
+    this.owner = owner;
+    this.id = v4();
+  }
+
+  tick() {
+    if (this.health <= 0) {
+      return;
+    }
+
+    if (this.cooldownTicks > 0) {
+      this.cooldownTicks--;
+    }
+
+    if (!this.target) {
+      this.target = findTarget(this, this.game.units);
+    }
+  }
+}
+
+export function attack(attacker: ActorUnit, target: ActorUnit): AttackEvent {
+  const damage = (attacker.data.attack[0] + (Math.random() * (attacker.data.attack[1] - attacker.data.attack[0]))) - target.data.defense;
 
   return {
     attacker,
@@ -27,9 +58,9 @@ export function attack(attacker: Unit, target: Unit): AttackEvent {
   };
 }
 
-export function findTarget(targeter: Unit, units: Unit[]): UnitOrNull {
-  const validTargets: Unit[] = units.filter((unit) => {
-    return unit.id !== targeter.id && unit.owner !== targeter.owner && unit.health > 0 && distance(targeter.location, unit.location) <= targeter.range;
+export function findTarget(targeter: ActorUnit, units: ActorUnit[]): ActorUnit | null {
+  const validTargets: ActorUnit[] = units.filter((unit) => {
+    return unit.id !== targeter.id && unit.owner !== targeter.owner && unit.health > 0 && distance(targeter.location, unit.location) <= targeter.data.range;
   });
 
   // if (validTargets.length > 0) {
@@ -39,10 +70,6 @@ export function findTarget(targeter: Unit, units: Unit[]): UnitOrNull {
   return validTargets.length > 0 ? validTargets[Math.floor(Math.random() * validTargets.length)] : null;
 }
 
-export function unitFactory(unitDefinition: Unit, owner: string): Unit {
-  return {
-    ...unitDefinition,
-    owner,
-    id: v4(),
-  };
+export function unitFactory(unitDefinition: Unit, game: Game, owner: string): ActorUnit {
+  return new ActorUnit(unitDefinition, game, owner);
 }

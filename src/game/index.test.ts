@@ -1,5 +1,6 @@
+import { v4 } from 'uuid';
 import { distance, translate, Vector } from "./vector";
-import { attack, findTarget, Unit } from './unit';
+import { ActorUnit, attack, findTarget, Unit } from './unit';
 import { AttackEvent, Game, getGameOver, tick } from ".";
 
 const defaultGameData = {
@@ -10,16 +11,14 @@ const defaultGameData = {
 };
 
 const defaultUnitData = {
-  location: { x: 0, y: 0 },
   type: 'test',
   name: 'test',
   health: 1,
   attack: [1, 1],
   defense: 1,
   moveSpeed: 1,
-  owner: 'test-player',
   range: 1,
-  id: 'test-id',
+  cooldown: 0,
 };
 
 const defaultVectorData = {
@@ -27,29 +26,42 @@ const defaultVectorData = {
   y: 0,
 };
 
+const defaultPlayers = [
+  v4(),
+  v4(),
+];
+
 describe('Unit', () => {
   it('can be created', () => {
     const testUnit: Unit = {
       ...defaultUnitData,
     };
 
-    expect(testUnit.location.x).toBe(0);
+    expect(testUnit.health).toBe(1);
   });
+});
 
+describe('UnitActor', () => {
   it('can be used to attack', () => {
-    const attacker: Unit = {
+    const game: Game = {
+      players: [],
+      units: [],
+      tick: 0,
+      events: [],
+    };
+    const attacker: ActorUnit = new ActorUnit({
       ...defaultUnitData,
       attack: [2, 2],
-    };
-    const target: Unit = {
+    }, game, defaultPlayers[0]);
+    const target: ActorUnit = new ActorUnit({
       ...defaultUnitData,
-    };
+    }, game, defaultPlayers[1]);
 
     const attackEvent: AttackEvent = attack(attacker, target);
 
     expect(attackEvent.damage).toBe(1);
 
-    attacker.attack = [2, 5];
+    attacker.data.attack = [2, 5];
     const attackEvents: AttackEvent[] = [];
     for (let i = 0; i < 1000; i++) {
       attackEvents.push(attack(attacker, target));
@@ -63,15 +75,20 @@ describe('Unit', () => {
   });
 
   it('can get target', () => {
-    const attacker: Unit = {
-      ...defaultUnitData,
+    const game: Game = {
+      players: [],
+      units: [],
+      tick: 0,
+      events: [],
     };
-    const target: Unit = {
+    const attacker: ActorUnit = new ActorUnit({
       ...defaultUnitData,
-      location: { x: 1, y: 0 },
-      id: 'test2-id',
-      owner: 'test2-player',
-    };
+      attack: [2, 2],
+    }, game, defaultPlayers[0]);
+    const target: ActorUnit = new ActorUnit({
+      ...defaultUnitData,
+    }, game, defaultPlayers[1], { x: 1, y: 0 });
+    target.id = 'test2-id';
 
     let newTarget = findTarget(attacker, [attacker, target]);
 
@@ -104,19 +121,17 @@ describe('Game', () => {
   it('can be ticked', () => {
     const testGame: Game = {
       ...defaultGameData,
-      units: [
-        {
-          ...defaultUnitData,
-        },
-        {
-          ...defaultUnitData,
-          location: { x: 1, y: 0 },
-          id: 'test2-id',
-          owner: 'test2-player',
-          attack: [2, 2],
-        },
-      ],
+      units: [],
     };
+    testGame.units = [
+      new ActorUnit({
+        ...defaultUnitData,
+      }, testGame, defaultPlayers[0]),
+      new ActorUnit({
+        ...defaultUnitData,
+        attack: [2, 2],
+      }, testGame, defaultPlayers[1], { x: 1, y: 0 }),
+    ];
 
     tick(testGame);
 
@@ -130,20 +145,19 @@ describe('Game', () => {
   it('can be decided', () => {
     const testGame: Game = {
       ...defaultGameData,
-      units: [
-        {
-          ...defaultUnitData,
-          health: 10,
-        },
-        {
-          ...defaultUnitData,
-          location: { x: 1, y: 0 },
-          id: 'test2-id',
-          owner: 'test2-player',
-          attack: [2, 2],
-        },
-      ],
+      units: [],
     };
+    testGame.units = [
+      new ActorUnit({
+        ...defaultUnitData,
+        health: 10,
+      }, testGame, defaultPlayers[0]),
+      new ActorUnit({
+        ...defaultUnitData,
+        attack: [2, 2],
+      }, testGame, defaultPlayers[1], { x: 1, y: 0 }),
+    ];
+    testGame.units[1].owner = 'test2-player';
 
     while (!getGameOver(testGame)) {
       tick(testGame);
@@ -152,31 +166,26 @@ describe('Game', () => {
     expect(getGameOver(testGame)?.winningTeam).toBe('test2-player');
 
     testGame.units = [
-      {
+      new ActorUnit({
         ...defaultUnitData,
         attack: [2, 2],
-      },
-      {
+      }, testGame, defaultPlayers[0]),
+      new ActorUnit({
         ...defaultUnitData,
-        location: { x: 1, y: 0 },
-        id: 'test2-id',
-        owner: 'test2-player',
         attack: [2, 2],
-      },
+      }, testGame, defaultPlayers[1]),
     ];
     tick(testGame);
 
     expect(getGameOver(testGame)?.draw).toBe(true);
 
     testGame.units = [
-      {
+      new ActorUnit({
         ...defaultUnitData,
-      },
-      {
+      }, testGame, defaultPlayers[0]),
+      new ActorUnit({
         ...defaultUnitData,
-        id: 'test2-id',
-        owner: 'test2-player',
-      },
+      }, testGame, defaultPlayers[1]),
     ];
     tick(testGame);
 
