@@ -1,6 +1,6 @@
 import { distance, translate, Vector } from "./vector";
-import { attack, findTarget } from './units';
-import { AttackEvent, Game, getGameOver, tick, Unit } from ".";
+import { attack, findTarget, Unit } from './unit';
+import { AttackEvent, Game, getGameOver, tick } from ".";
 
 const defaultGameData = {
   players: [],

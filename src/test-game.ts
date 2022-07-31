@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { archer, footman } from './game/data/units';
 import { Game, getGameOver, tick } from './game/index';
-import { unitFactory } from './game/units';
+import { unitFactory } from './game/unit';
 
 const game: Game = {
   players: [

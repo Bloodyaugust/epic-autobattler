@@ -1,4 +1,4 @@
-import { Unit } from "..";
+import { Unit } from "../unit";
 
 const unitDefaults = {
   owner: '',

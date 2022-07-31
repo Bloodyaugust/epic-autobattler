@@ -1,6 +1,19 @@
 import { v4 } from 'uuid';
-import { AttackEvent, Unit } from './';
-import { distance } from './vector';
+import { AttackEvent } from '.';
+import { distance, Vector } from './vector';
+
+export type Unit = {
+  location: Vector;
+  type: string;
+  name: string;
+  health: number;
+  attack: number[];
+  defense: number;
+  moveSpeed: number;
+  range: number;
+  owner: string;
+  id: string;
+}
 
 export type UnitOrNull = Unit | null;
 

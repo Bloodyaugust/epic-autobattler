@@ -1,23 +1,9 @@
-import { attack, findTarget } from './units';
-import { Vector } from './vector';
+import { attack, findTarget, Unit } from './unit';
 
 export type AttackEvent = {
   attacker: Unit,
   target: Unit,
   damage: number,
-}
-
-export type Unit = {
-  location: Vector;
-  type: string;
-  name: string;
-  health: number;
-  attack: number[];
-  defense: number;
-  moveSpeed: number;
-  range: number;
-  owner: string;
-  id: string;
 }
 
 export type Game = {
