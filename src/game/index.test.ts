@@ -1,6 +1,6 @@
 import { distance, translate, Vector } from "./vector";
 import { attack, findTarget } from './units';
-import { AttackEvent, Game, tick, Unit } from ".";
+import { AttackEvent, Game, getGameOver, tick, Unit } from ".";
 
 const defaultGameData = {
   players: [],
@@ -14,7 +14,7 @@ const defaultUnitData = {
   type: 'test',
   name: 'test',
   health: 1,
-  attack: 1,
+  attack: [1, 1],
   defense: 1,
   moveSpeed: 1,
   owner: 'test-player',
@@ -39,7 +39,7 @@ describe('Unit', () => {
   it('can be used to attack', () => {
     const attacker: Unit = {
       ...defaultUnitData,
-      attack: 2,
+      attack: [2, 2],
     };
     const target: Unit = {
       ...defaultUnitData,
@@ -48,6 +48,18 @@ describe('Unit', () => {
     const attackEvent: AttackEvent = attack(attacker, target);
 
     expect(attackEvent.damage).toBe(1);
+
+    attacker.attack = [2, 5];
+    const attackEvents: AttackEvent[] = [];
+    for (let i = 0; i < 1000; i++) {
+      attackEvents.push(attack(attacker, target));
+    }
+    console.log(`
+    Attacks >= 3 damage: ${attackEvents.filter(event => event.damage >= 3).length}
+    Attacks >= 3.5 damage: ${attackEvents.filter(event => event.damage >= 3.5).length}
+    Attacks >= 3.9 damage: ${attackEvents.filter(event => event.damage >= 3.9).length}
+    `)
+    expect(attackEvents.reduce((totalDamage, event) => totalDamage + event.damage, 0) / attackEvents.length).toBeGreaterThan(2.1);
   });
 
   it('can get target', () => {
@@ -61,11 +73,22 @@ describe('Unit', () => {
       owner: 'test2-player',
     };
 
-    const newTarget = findTarget(attacker, [attacker, target]);
+    let newTarget = findTarget(attacker, [attacker, target]);
 
     expect(newTarget.id).toBe('test2-id');
     expect(newTarget).not.toBe(attacker);
     expect(newTarget).toBe(target);
+
+    target.location = { x: 2, y: 0 };
+    newTarget = findTarget(attacker, [attacker, target]);
+
+    expect(newTarget).toBe(null);
+
+    target.location = { x: 1, y: 0 };
+    target.owner = attacker.owner;
+    newTarget = findTarget(attacker, [attacker, target]);
+
+    expect(newTarget).toBe(null);
   });
 });
 
@@ -90,7 +113,7 @@ describe('Game', () => {
           location: { x: 1, y: 0 },
           id: 'test2-id',
           owner: 'test2-player',
-          attack: 2,
+          attack: [2, 2],
         },
       ],
     };
@@ -102,6 +125,62 @@ describe('Game', () => {
     expect(testGame.events.length).toBe(2);
     expect(testGame.events[0].damage).toBe(0);
     expect(testGame.events[1].damage).toBe(1);
+  });
+
+  it('can be decided', () => {
+    const testGame: Game = {
+      ...defaultGameData,
+      units: [
+        {
+          ...defaultUnitData,
+          health: 10,
+        },
+        {
+          ...defaultUnitData,
+          location: { x: 1, y: 0 },
+          id: 'test2-id',
+          owner: 'test2-player',
+          attack: [2, 2],
+        },
+      ],
+    };
+
+    while (!getGameOver(testGame)) {
+      tick(testGame);
+    }
+
+    expect(getGameOver(testGame)?.winningTeam).toBe('test2-player');
+
+    testGame.units = [
+      {
+        ...defaultUnitData,
+        attack: [2, 2],
+      },
+      {
+        ...defaultUnitData,
+        location: { x: 1, y: 0 },
+        id: 'test2-id',
+        owner: 'test2-player',
+        attack: [2, 2],
+      },
+    ];
+    tick(testGame);
+
+    expect(getGameOver(testGame)?.draw).toBe(true);
+
+    testGame.units = [
+      {
+        ...defaultUnitData,
+      },
+      {
+        ...defaultUnitData,
+        id: 'test2-id',
+        owner: 'test2-player',
+      },
+    ];
+    tick(testGame);
+
+    expect(getGameOver(testGame)).toBe(null);
   });
 });
 
